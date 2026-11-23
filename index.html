@@ -275,9 +275,9 @@
   /* ═════════ 서버 주소 — 이 줄만 고치면 됩니다 ═════════
      Apps Script [배포 > 웹 앱] 으로 받은 URL(끝이 /exec)을 붙여 넣으십시오.
      이 주소는 공개 정보입니다. 비밀번호·키 같은 값은 넣지 마십시오. */
-  const API_URL = 'https://script.google.com/macros/s/여기에_배포_ID를_붙여넣기/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz8E3nWeZ_9SPWjuxJWoh66WmlEx4r2t_-97t_0A9KTIACW0bsjnCgjEF_qQmcZx1h2/exec';
   /* ═══════════════════════════════════════════════════════ */
-  const FRONT_VERSION = '2026.11.23-10';
+  const FRONT_VERSION = '2026.11.23-12';
   const API_TIMEOUT_MS = 25000;
   let CFG = { deadline: '', contact: '', closed: false, version: '' };
 
@@ -298,7 +298,10 @@
    * - Apps Script 가 googleusercontent.com 으로 리디렉션하므로 follow
    */
   async function api(action, data) {
-    if (!API_URL || API_URL.indexOf('/exec') === -1) throw new Error('API_URL_MISSING');
+    // 배포 주소 형식 확인 (예시 문구가 그대로 남아 있거나 /dev 주소인 경우 차단)
+    if (!/^https:\/\/script\.google\.com\/(a\/macros\/[^/]+\/|macros\/)s\/[A-Za-z0-9_-]{20,}\/exec$/.test(API_URL)) {
+      throw new Error('API_URL_MISSING');
+    }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
     try {
@@ -310,7 +313,13 @@
         signal: ctrl.signal
       });
       if (!res.ok) throw new Error('HTTP_' + res.status);
-      return await res.json();
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (_) {
+        // JSON 대신 HTML 이 왔다면 예전 버전(화면용) 배포이거나 doPost 가 없는 경우
+        throw new Error(/doPost/.test(text) ? 'NO_DOPOST' : 'NOT_JSON');
+      }
     } finally {
       clearTimeout(timer);
     }
@@ -782,10 +791,24 @@
       .catch(err => onFail && onFail(netMessage(err)));
   }
 
+  /**
+   * 오류 안내 — 회원에게는 쉬운 문구, 끝의 (오류 코드)는 관리자 확인용
+   *  URL    : index.html 의 API_URL 이 비었거나 형식이 틀림
+   *  NET    : 서버 응답을 읽지 못함 (액세스 권한 '모든 사용자' 아님 · 주소 오류 · 네트워크)
+   *  HTML   : 서버가 JSON 대신 화면(HTML)을 돌려줌 (예전 버전 배포)
+   *  DOPOST : 배포된 버전에 doPost 함수가 없음 (Code.gs 새 버전 배포 필요)
+   *  HTTPxxx: 서버 응답 오류 · TIMEOUT: 응답 지연
+   */
   function netMessage(err) {
-    if (err && err.message === 'API_URL_MISSING') return '서버 주소가 설정되지 않았습니다. 관리자에게 문의해 주십시오.';
+    const m = (err && err.message) || '';
+    console.error('[API 오류]', err);
+    if (m === 'API_URL_MISSING') return '서버 주소가 설정되지 않았습니다. 관리자에게 문의해 주십시오. (오류 코드: URL)';
+    if (m === 'NO_DOPOST') return '서버가 아직 준비되지 않았습니다. 관리자에게 문의해 주십시오. (오류 코드: DOPOST)';
+    if (m === 'NOT_JSON') return '서버가 아직 준비되지 않았습니다. 관리자에게 문의해 주십시오. (오류 코드: HTML)';
+    if (/^HTTP_/.test(m)) return '서버 응답에 문제가 있습니다. 잠시 후 다시 시도해 주십시오. (오류 코드: ' + m.replace('_', '') + ')';
+    if (err && err.name === 'AbortError') return '서버 응답이 늦습니다. 잠시 후 다시 시도해 주십시오. (오류 코드: TIMEOUT)';
     if (err && err.name === 'AbortError') return '서버 응답이 늦습니다. 잠시 후 다시 시도해 주십시오.';
-    return '서버에 연결하지 못했습니다. 인터넷 연결을 확인하신 뒤 다시 시도해 주십시오.';
+    return '서버에 연결하지 못했습니다. 인터넷 연결을 확인하신 뒤 다시 시도해 주십시오. (오류 코드: NET)';
   }
 
   /** 서버 설정(회신 기한·연락처·마감 여부) 불러오기 */
