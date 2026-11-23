@@ -1,1 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="theme-color" content="#1F4A40">
+  <title>재보회 명부 · 달력 배송 개인정보 제공 동의</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%92%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Pretendard Variable"', 'Pretendard', '"Noto Sans KR"', 'system-ui', 'sans-serif']
+          },
+          colors: {
+            pine: { 50: '#EEF4F1', 100: '#D9E7E1', 200: '#B5CFC4', 500: '#3C7565', 600: '#2A5C50', 700: '#1F4A40', 800: '#163730' },
+            ink: '#1B2421',
+            paper: '#F3F5F4',
+            brass: '#A8823A',
+            rust: '#B4472F'
+          }
+        }
+      }
+    };
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      html { font-size: 17px; -webkit-text-size-adjust: 100%; }
+      @media (min-width: 768px) { html { font-size: 16px; } }
+      body { word-break: keep-all; overflow-wrap: anywhere; overflow-x: hidden; }
+      button, a, label { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    }
+    @layer components {
+      .field { @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-ink placeholder:text-slate-400 transition-shadow focus:border-pine-600 focus:outline-none focus:ring-2 focus:ring-pine-200 disabled:bg-slate-100; }
+      .field.is-error { @apply border-rust ring-2 ring-rust/20; }
+      .label { @apply mb-1.5 flex items-center gap-2 font-semibold text-ink; }
+      .tag { @apply whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium; }
+      .seg { @apply flex h-12 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border border-slate-300 bg-white px-3 font-semibold text-slate-600 transition-colors hover:border-slate-400; }
+      .peer:checked + .seg-y { @apply border-pine-700 bg-pine-700 text-white; }
+      .peer:checked + .seg-n { @apply border-slate-600 bg-slate-600 text-white; }
+      .peer:focus-visible + .seg { @apply ring-2 ring-pine-500 ring-offset-2; }
+      .peer:disabled + .seg { @apply cursor-not-allowed opacity-60; }
+      .group-error .seg { @apply border-rust; }
+      .group-error .acc-title { @apply text-rust; }
+      .err { @apply mt-1.5 text-sm font-medium text-rust; }
+      .btn { @apply inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-5 font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pine-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50; }
+      .btn-primary { @apply bg-pine-700 text-white hover:bg-pine-800; }
+      .btn-ghost { @apply border border-slate-300 bg-white text-ink hover:bg-slate-50; }
+      .num { @apply grid h-7 w-7 shrink-0 place-items-center rounded-full bg-pine-50 text-sm font-bold text-pine-700; }
+      .mark { @apply ml-0.5 font-semibold text-brass; }
+      .chip { @apply inline-flex h-6 items-center gap-1 whitespace-nowrap rounded-full border px-2 text-xs font-semibold sm:h-7 sm:px-2.5 sm:text-sm; }
+      .ans { @apply inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-full border px-2 text-xs font-semibold; }
+      .more { @apply inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-md px-1 py-1 text-sm font-semibold text-pine-700 sm:px-1.5; }
+      .acc-head { @apply flex w-full items-center gap-2 rounded-lg py-3.5 text-left transition-colors hover:bg-pine-50/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-pine-500 sm:gap-3 sm:px-2; }
+      .chk { @apply h-5 w-5 cursor-pointer accent-pine-700; }
+      .kw { color: #0000FF; }
+      .btn-blue { @apply bg-[#0000FF] text-white hover:bg-[#0000CC] focus-visible:ring-[#0000FF]; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body class="bg-paper font-sans text-ink antialiased">
 
+<!-- ═══════════ 작성 화면 ═══════════ -->
+<main id="formView" class="mx-auto w-full max-w-2xl px-3 pb-40 pt-6 sm:px-6 sm:pt-12">
+
+  <header>
+    <h1 class="text-[1.5rem] font-bold leading-snug tracking-tight sm:text-[2rem]">
+      재보회 명부 제작 및 회사 달력 배송
+      <span class="mt-1 block text-[1.1rem] font-semibold text-pine-700 sm:text-[1.35rem]">개인정보 제공 동의 요청</span>
+    </h1>
+
+    <div class="mt-5 space-y-3 leading-relaxed text-slate-700">
+      <p>안녕하세요, 재보회 총무 장철민입니다.<br class="hidden sm:block"> 명부 발간과 회사 달력 배송을 위해 동의 여부 확인과 정보 업데이트를 요청드립니다.</p>
+      <p>아래 양식을 작성해 제출해 주십시오. <strong class="font-semibold text-ink">회신이 없으신 경우 명부에 수록되지 않습니다.</strong></p>
+    </div>
+
+    <div class="mt-6 rounded-xl bg-white px-4 py-3 ring-1 ring-slate-200">
+      <p class="text-sm text-slate-500">회신 기한</p>
+      <p class="mt-0.5 text-lg font-bold" id="deadlineText">불러오는 중…</p>
+    </div>
+
+    <div id="loadError" class="mt-4 hidden rounded-xl border border-rust/30 bg-rust/5 px-4 py-3 text-rust">
+      <p id="loadErrorMsg" class="font-medium"></p>
+      <button type="button" id="btnRetry" class="btn btn-ghost mt-2 h-10 px-4 text-ink">다시 불러오기</button>
+    </div>
+
+    <div id="closedBanner" class="mt-4 hidden rounded-xl border border-rust/30 bg-rust/5 px-4 py-3 font-medium text-rust">
+      회신 기한이 지나 온라인 제출이 마감되었습니다. 문의는 맨 아래 번호로 연락해 주십시오.
+    </div>
+  </header>
+
+  <form id="form" novalidate autocomplete="on">
+    <fieldset id="formFields" class="contents">
+
+      <!-- 동의사항 -->
+      <section class="mt-6 rounded-2xl bg-white px-3 py-5 ring-1 ring-slate-200 sm:mt-8 sm:p-7" aria-labelledby="secConsent">
+        <div class="flex items-center justify-between gap-3">
+          <h2 id="secConsent" class="text-xl font-bold">동의사항</h2>
+          <button type="button" id="btnToggleAll" class="more hover:bg-pine-50">모두 펼치기</button>
+        </div>
+        <p class="mt-1 text-sm text-slate-500">
+          <span class="whitespace-nowrap">Y: 동의, N: 미동의</span> &nbsp;
+          <span class="whitespace-nowrap"><span class="mark">①</span> 코리안리재보험(주)에 제공</span> &nbsp;
+          <span class="whitespace-nowrap"><span class="mark">②</span> 회원 상호 간 공개</span>
+        </p>
+
+        <!-- 일괄 처리 -->
+        <div class="mt-4 rounded-xl bg-pine-50 py-2.5 pl-2 sm:flex sm:items-center sm:gap-2 sm:py-2">
+          <div class="grid grid-cols-3 gap-1.5 pr-2 sm:flex sm:gap-2 sm:pr-0">
+            <button type="button" id="btnAllY" class="btn btn-blue h-11 px-2 text-[0.94rem] sm:h-10 sm:px-4 sm:text-base">전체동의</button>
+            <button type="button" id="btnSelY" class="btn h-11 border border-pine-700 bg-white px-2 text-[0.94rem] text-pine-700 hover:bg-pine-100 sm:h-10 sm:px-4 sm:text-base" disabled>선택동의</button>
+            <button type="button" id="btnAllN" class="btn h-11 border border-slate-300 bg-white px-2 text-[0.94rem] text-ink hover:bg-slate-50 sm:h-10 sm:px-4 sm:text-base">미동의</button>
+          </div>
+          <div class="mt-1 flex items-center justify-end gap-2 sm:ml-auto sm:mt-0">
+            <span id="selInfo" class="hidden whitespace-nowrap text-sm text-slate-600 lg:inline" aria-live="polite"></span>
+            <label class="flex cursor-pointer items-center whitespace-nowrap text-sm font-semibold">
+              모두 선택
+              <span class="grid h-10 w-10 place-items-center"><input type="checkbox" id="selAll" class="chk"></span>
+            </label>
+          </div>
+        </div>
+
+        <div id="consentList" class="mt-1"></div>
+        <ul id="noticeList" class="mt-3 space-y-1 border-t-2 border-slate-200 pt-3 text-[0.9rem] leading-snug"></ul>
+      </section>
+
+      <!-- 인적정보 -->
+      <section class="mt-6 rounded-2xl bg-white px-4 py-5 ring-1 ring-slate-200 sm:p-7" aria-labelledby="secInfo">
+        <h2 id="secInfo" class="text-xl font-bold">인적정보</h2>
+        <p class="mt-1.5 leading-relaxed text-slate-600">명부에 수록을 희망하시는 정보만 기재해 주십시오. 내용을 바꾸시려면 같은 성명·휴대전화번호로 다시 제출해 주십시오.</p>
+
+        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div>
+            <label for="name" class="label">성명 <span class="tag bg-pine-50 text-pine-700">필수</span></label>
+            <input id="name" name="name" class="field" maxlength="30" autocomplete="name" placeholder="홍길동">
+            <p class="err hidden" data-err="name"></p>
+          </div>
+          <div>
+            <label for="phone" class="label">휴대전화번호 <span class="tag bg-slate-100 text-slate-500">선택</span></label>
+            <input id="phone" name="phone" class="field" inputmode="numeric" maxlength="13" autocomplete="tel" placeholder="010-0000-0000">
+            <p class="err hidden" data-err="phone"></p>
+          </div>
+          <div class="sm:col-span-2">
+            <label for="company" class="label">회사주소 <span class="tag bg-slate-100 text-slate-500">선택</span></label>
+            <input id="company" name="company" class="field" maxlength="200" placeholder="회사명과 주소">
+            <p class="err hidden" data-err="company"></p>
+          </div>
+          <div class="sm:col-span-2">
+            <label for="home" class="label">자택주소 <span class="tag bg-slate-100 text-slate-500">선택</span></label>
+            <input id="home" name="home" class="field" maxlength="200" autocomplete="street-address" placeholder="도로명 주소와 상세주소">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="email" class="label">이메일 <span class="tag bg-slate-100 text-slate-500">선택</span></label>
+            <input id="email" name="email" type="email" class="field" maxlength="100" autocomplete="email" placeholder="name@example.com">
+            <p class="err hidden" data-err="email"></p>
+          </div>
+        </div>
+
+        <!-- 달력 배송 대상 + 3번(달력) 동의 + 주소 2개 입력 시에만 표시 -->
+        <div id="calWrap" class="mt-6 hidden rounded-xl bg-pine-50 p-4" data-group="calAddr">
+          <p class="font-semibold">달력을 받으실 주소를 선택해 주십시오</p>
+          <div class="mt-3 grid grid-cols-2 gap-2 sm:max-w-xs" role="radiogroup" aria-label="달력 받으실 주소">
+            <label><input type="radio" name="calAddr" value="회사" class="peer sr-only"><span class="seg seg-y">회사주소</span></label>
+            <label><input type="radio" name="calAddr" value="자택" class="peer sr-only"><span class="seg seg-y">자택주소</span></label>
+          </div>
+          <p class="err hidden" data-err="calAddr"></p>
+        </div>
+
+        <p class="mt-5 flex gap-1.5 text-[0.9rem] leading-snug text-slate-600">
+          <span class="w-4 shrink-0 text-center text-slate-400" aria-hidden="true">※</span>
+          <span>인적정보는 한 번만 기재해 주십시오.<span id="calAddrHint" class="hidden"> 회사주소와 자택주소를 모두 기재하신 경우 달력을 받으실 주소를 표시해 주십시오.</span></span>
+        </p>
+
+        <!-- 자동 제출 방지용(사람에게는 보이지 않음) -->
+        <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+          <label for="website">웹사이트</label>
+          <input id="website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+      </section>
+    </fieldset>
+  </form>
+
+  <!-- 문의처 (맨 아래) -->
+  <footer class="mt-6 rounded-2xl bg-white px-5 py-4 ring-1 ring-slate-200">
+    <p class="text-sm text-slate-500">사진 전송 · 철회 · 정정 · 삭제 문의</p>
+    <p class="mt-0.5 text-lg font-bold" id="contactText"></p>
+  </footer>
+  <p class="mt-3 text-center text-xs text-slate-400" id="versionText"></p>
+</main>
+
+<!-- ═══════════ 하단 고정: 명부 수록 상태 + 제출 ═══════════ -->
+<div id="bar" class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur">
+  <div class="mx-auto flex w-full max-w-2xl items-center gap-3 px-4 pt-3 sm:px-6"
+       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-1.5">
+        <span id="chip1" class="chip"></span>
+        <span id="chip4" class="chip"></span>
+      </div>
+      <p id="listStatus" class="mt-1 truncate text-[0.94rem] font-semibold" aria-live="polite"></p>
+    </div>
+    <button id="btnSubmit" type="submit" form="form" class="btn btn-primary shrink-0 px-4 sm:px-5">제출하기</button>
+  </div>
+</div>
+
+<!-- ═══════════ 제출 완료 화면 ═══════════ -->
+<main id="doneView" class="mx-auto hidden w-full max-w-xl px-4 pb-16 pt-10 sm:px-6 sm:pt-16">
+  <div class="rounded-2xl bg-white p-6 text-center ring-1 ring-slate-200 sm:p-10">
+    <div class="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-brass text-brass">
+      <svg viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h1 class="mt-5 text-2xl font-bold">제출되었습니다</h1>
+    <p id="doneMsg" class="mt-2 leading-relaxed text-slate-600"></p>
+
+    <dl class="mt-6 divide-y divide-slate-200 rounded-xl bg-paper text-left">
+      <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-slate-500">접수번호</dt><dd id="doneNo" class="font-bold tracking-wide"></dd></div>
+      <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-slate-500">제출일시</dt><dd id="doneAt" class="font-semibold"></dd></div>
+      <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-slate-500">명부 수록</dt><dd id="doneListed" class="font-semibold"></dd></div>
+    </dl>
+
+    <p id="donePhoto" class="mt-5 hidden rounded-lg bg-[#FAF6EE] px-4 py-3 text-left leading-relaxed"></p>
+
+    <p class="mt-6 text-sm leading-relaxed text-slate-500">내용을 바꾸시려면 같은 성명·휴대전화번호로 다시 제출해 주십시오.</p>
+    <button id="btnAgain" type="button" class="btn btn-ghost mt-4">다시 작성하기</button>
+  </div>
+</main>
+
+<!-- ═══════════ 처음 접속 시 성명 입력 ═══════════ -->
+<div id="nameModal" class="fixed inset-0 z-[55] hidden" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+  <div class="absolute inset-0 bg-ink/60"></div>
+  <div class="absolute left-1/2 top-[8vh] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl bg-white p-6 sm:top-1/2 sm:-translate-y-1/2 sm:p-7">
+    <h2 id="nameTitle" class="text-xl font-bold">성명을 입력해 주십시오</h2>
+    <p class="mt-1.5 text-[0.94rem] leading-relaxed text-slate-600">입력하신 성명은 인적정보에 기재되며, 회사 달력 배송 대상 여부 확인에 사용됩니다.</p>
+    <form id="nameForm" novalidate class="mt-4">
+      <input id="nameInput" class="field text-lg" maxlength="30" autocomplete="name" placeholder="홍길동" aria-label="성명">
+      <p id="nameErr" class="err hidden"></p>
+      <button type="submit" id="btnName" class="btn btn-primary mt-4 w-full">확인</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════ 제출 전 확인 모달 ═══════════ -->
+<div id="confirmModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="absolute inset-0 bg-ink/50" data-close></div>
+  <div style="max-height: 92vh; max-height: 92dvh;" class="absolute inset-x-0 bottom-0 flex flex-col rounded-t-2xl bg-white sm:inset-auto sm:left-1/2 sm:top-1/2 sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl">
+    <div class="border-b border-slate-200 px-5 py-4">
+      <h2 id="confirmTitle" class="text-lg font-bold">제출 전에 확인해 주십시오</h2>
+    </div>
+    <div class="flex-1 overflow-y-auto px-5 py-4">
+      <div id="sumWarn" class="mb-4 hidden space-y-2"></div>
+      <dl id="sumList" class="divide-y divide-slate-100"></dl>
+    </div>
+    <div class="flex gap-2 border-t border-slate-200 px-5 pt-4"
+         style="padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));">
+      <button type="button" class="btn btn-ghost flex-1" data-close>수정하기</button>
+      <button type="button" id="btnConfirm" class="btn btn-primary flex-1">이대로 제출</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" class="pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style="top: calc(1rem + env(safe-area-inset-top, 0px));" aria-live="assertive"></div>
+
+<script>
+(function () {
+  'use strict';
+  /* ═════════ 서버 주소 — 이 줄만 고치면 됩니다 ═════════
+     Apps Script [배포 > 웹 앱] 으로 받은 URL(끝이 /exec)을 붙여 넣으십시오.
+     이 주소는 공개 정보입니다. 비밀번호·키 같은 값은 넣지 마십시오. */
+  const API_URL = 'https://script.google.com/macros/s/여기에_배포_ID를_붙여넣기/exec';
+  /* ═══════════════════════════════════════════════════════ */
+  const FRONT_VERSION = '2026.11.23-10';
+  const API_TIMEOUT_MS = 25000;
+  let CFG = { deadline: '', contact: '', closed: false, version: '' };
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  const contactText = () => esc(CFG.contact || '');
+  const contactTel = () => String(CFG.contact || '').replace(/\D/g, '');
+
+  /**
+   * Apps Script 웹앱 호출
+   * - Content-Type 을 text/plain 으로 보내 CORS 사전요청(preflight)을 피함
+   * - Apps Script 가 googleusercontent.com 으로 리디렉션하므로 follow
+   */
+  async function api(action, data) {
+    if (!API_URL || API_URL.indexOf('/exec') === -1) throw new Error('API_URL_MISSING');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ action: action }, data || {})),
+        redirect: 'follow',
+        signal: ctrl.signal
+      });
+      if (!res.ok) throw new Error('HTTP_' + res.status);
+      return await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /* ───────── 개인정보 제3자 제공 안내 (항목을 펼치면 표시, hl: 해당 항목에서 강조할 줄) ───────── */
+  const PHOTO_NOTE = '(사진 수록 동의자에 한함)';
+  const GUIDES = {
+    g1: {
+      title: '개인정보 제3자 제공 안내 ①',
+      rows: [
+        { label: '제공받는 자', value: '코리안리재보험(주)' },
+        { label: '이용 목적 및 제공 항목', items: [
+          { k: '명부 제작·배송', v: '성명, 휴대전화번호, 회사주소, 자택주소, 이메일 중 명부 수록을 희망하여 제공한 정보 및 사진' + PHOTO_NOTE, hl: 'c1' },
+          { k: '문자 발송(부고 및 행사 안내)', v: '성명, 휴대전화번호', hl: 'c2' }
+        ] },
+        { label: '보유·이용 기간', items: [
+          { k: '명부 제작·배송', v: '명부 배송 완료 시까지(완료 후 지체 없이 파기)', hl: 'c1' },
+          { k: '문자 발송(부고 및 행사 안내)', v: '재보회 탈퇴 또는 동의 철회 시까지', hl: 'c2' }
+        ] }
+      ]
+    },
+    g2: {
+      title: '개인정보 제3자 제공 안내 ②',
+      rows: [
+        { label: '제공받는 자', value: '명부를 배부받는 재보회 회원' },
+        { label: '이용 목적', value: '회원 상호 간 연락 및 친목 도모' },
+        { label: '제공 항목', value: '성명, 휴대전화번호, 회사주소, 자택주소, 이메일 중 명부 수록을 희망하여 제공한 정보 및 사진' + PHOTO_NOTE },
+        { label: '보유·이용 기간', value: '명부를 배부받은 회원의 명부 보유 기간' }
+      ]
+    }
+  };
+  const REFUSE_NOTE = '각 동의를 거부하실 수 있습니다. 거부하시면 해당 사항(명부 수록·배송, 사진 수록 또는 문자 안내)이 이루어지지 않을 수 있으며, 그 밖의 불이익은 없습니다.';
+
+  /* ───────── 동의 항목 (표시 순서) — {c1}, {c4} 는 화면 번호로 바뀜 ─────────
+     cal: true      → 달력배송명단에 있는 분에게만 표시
+     optional: true → 선택사항 (응답하지 않으면 미동의로 처리) */
+  const ITEMS = [
+    { key: 'c1', type: 'yn', title: '명부 제작·배송을 위한 코리안리 제공 동의', mark: '①',
+      guides: ['g1'], refuse: true,
+      note: '명부 수록을 위해서는 {c4}번과 함께 동의하셔야 합니다.' },
+    { key: 'c2', type: 'yn', title: '문자 발송(부고 및 행사 안내)을 위한 코리안리 제공 동의', mark: '①',
+      guides: ['g1'], refuse: true,
+      note: '동의하시면 아래 인적정보에 휴대전화번호를 적어 주십시오.' },
+    { key: 'c3', type: 'yn', cal: true, title: '회사 달력 배송을 위한 코리안리 제공 동의', mark: '①',
+      guides: ['g1'], refuse: true,
+      note: '동의하시면 아래 인적정보에 회사주소 또는 자택주소를 적어 주십시오. 두 주소를 모두 적으시면 달력 받으실 주소를 선택하실 수 있습니다.' },
+    { key: 'c4', type: 'yn', title: '명부 수록 및 회원 상호 간 공개 동의', mark: '②',
+      guides: ['g2'], refuse: true,
+      note: '명부 수록을 위해서는 {c1}번과 함께 동의하셔야 합니다.' },
+    { key: 'receive', type: 'receive', title: '명부 수령 희망 여부: 희망 / 미희망', mark: '',
+      guides: [],
+      note: '명부를 받으시려면 {c1}번에 동의하시고 아래 인적정보에 주소를 적어 주십시오.' },
+    { key: 'note', type: 'text', title: '기타 참고사항', mark: '', guides: [] },
+    { key: 'c5', type: 'yn', optional: true, title: '사진 수록 동의', mark: '',
+      guides: [], refuse: true,
+      noteHtml: `※ 동의 시 사진을 본 번호(<a class="contact-sms font-semibold underline underline-offset-2"></a>)로 전송해 주십시오.<br>선택사항이며, 선택하지 않으시면 미동의로 처리됩니다.` }
+  ];
+
+  /* ※ 안내 — 항상 펼친 상태 */
+  const NOTICES = [
+    { mark: '※', text: '명부 수록을 위해서는 {c1}번과 {c4}번에 모두 동의하셔야 합니다.', strong: true },
+    { mark: '※', text: '명부 관련 동의는 인쇄 착수 전까지, 문자 발송 동의는 언제든지 철회하실 수 있습니다. 인쇄·배부된 명부는 회수·수정이 어려울 수 있습니다.' },
+    { mark: '', text: '회신하신 내용은 재보회가 수신·보관하며, 동의하신 항목에 한해 코리안리재보험(주)에 제공됩니다.' }
+  ];
+
+  const CHEVRON = '<svg viewBox="0 0 20 20" class="h-4 w-4 transition-transform group-aria-expanded:rotate-180" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5l5 5 5-5"/></svg>';
+
+  /* ───────── 상태 ───────── */
+  let calTarget = false;      // 달력배송명단 포함 여부
+  let checkedName = '';       // 마지막으로 서버에 확인한 성명
+  const NUM = {};             // 항목별 화면 번호
+
+  const normName = v => String(v || '').replace(/\s+/g, '');
+  const isVisible = it => !it.cal || calTarget;
+  const itemOf = key => ITEMS.find(it => it.key === key);
+
+  /** 주요 단어 파란색 강조 (이미 escape 된 문자열에 적용) */
+  const KEYWORDS = ['명부 제작·배송', '문자 발송', '달력 배송', '명부 수록', '사진 수록', '명부 수령'];
+  const KW_RE = new RegExp(KEYWORDS.join('|'), 'g');   // 정규식 특수문자 없는 단어만 사용
+  const kw = html => html.replace(KW_RE, '<span class="kw">$&</span>');
+
+  /** 문구 안의 {c1} 같은 자리표시를 번호 칸으로 바꿈 */
+  const tok = s => esc(s).replace(/\{(c\d|receive)\}/g, '<span data-ref="$1"></span>');
+
+  /* ───────── 렌더 ───────── */
+  function guideHtml(gkey, itemKey) {
+    const g = GUIDES[gkey];
+    if (!g) return '';
+    const rows = g.rows.map(r => {
+      if (r.items) {
+        return `
+          <li>
+            <p><span class="text-brass" aria-hidden="true">▸</span> <span class="font-semibold">${esc(r.label)}</span></p>
+            <ul class="mt-1 space-y-1">
+              ${r.items.map(x => `
+                <li class="flex gap-1.5 rounded-md px-2 py-1 ${x.hl === itemKey ? 'bg-white font-medium text-ink ring-1 ring-pine-200' : 'text-slate-600'}">
+                  <span aria-hidden="true">·</span><span><span class="font-semibold">${esc(x.k)}</span>: ${esc(x.v)}</span>
+                </li>`).join('')}
+            </ul>
+          </li>`;
+      }
+      return `<li><span class="text-brass" aria-hidden="true">▸</span> <span class="font-semibold">${esc(r.label)}</span>: ${esc(r.value)}</li>`;
+    }).join('');
+    return `
+      <div class="mt-3 rounded-lg bg-paper px-4 py-3.5 text-[0.94rem] leading-relaxed">
+        <p class="font-bold text-pine-800">[${esc(g.title)}]</p>
+        <ul class="mt-2 space-y-2">${rows}</ul>
+      </div>`;
+  }
+
+  function controlsHtml(it) {
+    if (it.type === 'yn' || it.type === 'receive') {
+      const y = it.type === 'yn' ? ['Y', '동의'] : ['희망', '희망'];
+      const n = it.type === 'yn' ? ['N', '미동의'] : ['미희망', '미희망'];
+      return `
+        <div class="mt-4 grid grid-cols-2 gap-2 sm:max-w-xs" role="radiogroup" aria-label="${esc(it.title)}">
+          <label><input type="radio" name="${it.key}" value="${y[0]}" class="peer sr-only"><span class="seg seg-y">${y[1]}</span></label>
+          <label><input type="radio" name="${it.key}" value="${n[0]}" class="peer sr-only"><span class="seg seg-n">${n[1]}</span></label>
+        </div>`;
+    }
+    return `
+      <textarea id="note" name="note" rows="3" maxlength="500" class="field mt-1 resize-y" placeholder="전하실 말씀이 있으면 적어 주십시오."></textarea>
+      <p class="mt-1 text-right text-sm text-slate-400"><span id="noteCount">0</span> / 500</p>`;
+  }
+
+  function titleHtml(it) {
+    return kw(esc(it.title))
+      + (it.mark ? `<span class="mark">(${esc(it.mark)})</span>` : '')
+      + (it.optional ? ' <span class="tag ml-1 bg-slate-100 align-middle text-slate-500">선택</span>' : '');
+  }
+
+  function renderItems() {
+    $('#consentList').innerHTML = ITEMS.map(it => {
+      const guide = it.guides.map(g => guideHtml(g, it.key)).join('');
+      const refuse = it.refuse
+        ? `<p class="mt-3 text-sm leading-relaxed text-slate-500">※ ${esc(REFUSE_NOTE)}</p>` : '';
+      const note = it.noteHtml
+        ? `<p class="mt-3 leading-relaxed text-slate-700">${it.noteHtml}</p>`
+        : it.note ? `<p class="mt-3 leading-relaxed text-slate-700">${tok(it.note)}</p>` : '';
+      const box = it.type === 'text'
+        ? '<span class="w-10 shrink-0" aria-hidden="true"></span>'
+        : `<label class="grid h-11 w-10 shrink-0 cursor-pointer place-items-center"><input type="checkbox" class="chk" data-sel="${it.key}"></label>`;
+      return `
+        <div class="border-t border-slate-200 ${it.cal ? 'hidden' : ''}" data-group="${it.key}" data-acc="${it.key}">
+          <div class="flex items-center">
+            <button type="button" class="acc-head group min-w-0 flex-1" aria-expanded="false" aria-controls="panel-${it.key}">
+              <span class="num" data-num="${it.key}" data-no-of="${it.key}"></span>
+              <span class="acc-title min-w-0 flex-1 truncate text-[0.94rem] font-medium sm:text-base">${titleHtml(it)}</span>
+              <span class="ans hidden sm:inline-flex" data-ans="${it.key}"></span>
+              <span class="more"><span class="more-label">자세히</span>${CHEVRON}</span>
+            </button>
+            ${box}
+          </div>
+          <div id="panel-${it.key}" class="hidden pb-5 sm:pl-12 sm:pr-1" data-panel>
+            <p class="mb-3 font-semibold leading-snug"><span data-no-of="${it.key}"></span>. ${titleHtml(it)}</p>
+            ${guide}${refuse}${note}${controlsHtml(it)}
+            <p class="err hidden" data-err="${it.key}"></p>
+          </div>
+        </div>`;
+    }).join('');
+
+    $('#noticeList').innerHTML = NOTICES.map(n => `
+      <li class="flex gap-1.5">
+        <span class="w-4 shrink-0 text-center text-slate-400" aria-hidden="true">${esc(n.mark)}</span>
+        <span class="min-w-0 flex-1 ${n.strong ? 'font-semibold text-ink' : 'text-slate-600'}">${tok(n.text)}</span>
+      </li>`).join('');
+  }
+
+  /** 보이는 항목 기준으로 번호를 다시 매김 (달력 항목이 숨으면 뒤 번호가 당겨짐) */
+  function renumber() {
+    let n = 0;
+    Object.keys(NUM).forEach(k => delete NUM[k]);
+    ITEMS.forEach(it => { if (isVisible(it)) NUM[it.key] = ++n; });
+    $$('[data-no-of]').forEach(el => { el.textContent = NUM[el.dataset.noOf] || ''; });
+    $$('[data-ref]').forEach(el => { el.textContent = NUM[el.dataset.ref] || ''; });
+    $$('[data-sel]').forEach(b => b.setAttribute('aria-label', `${NUM[b.dataset.sel] || ''}번 항목 선택`));
+  }
+
+  /* 성명 확인 결과에 따라 달력 항목 표시/숨김 */
+  function setCalendar(flag) {
+    calTarget = !!flag;
+    const row = $('[data-acc="c3"]');
+    row.classList.toggle('hidden', !calTarget);
+    if (!calTarget) {
+      $$('input[name="c3"]').forEach(r => { r.checked = false; });
+      $$('input[name="calAddr"]').forEach(r => { r.checked = false; });
+      const b = $('[data-sel="c3"]'); if (b) b.checked = false;
+      setAcc('c3', false);
+      clearError('c3'); clearError('calAddr');
+    }
+    $('#calAddrHint').classList.toggle('hidden', !calTarget);
+    renumber();
+    updateSelUI();
+    updateUI();
+  }
+
+  function fmtDeadline(iso) {
+    const [y, m, d] = String(iso).split('-').map(Number);
+    if (!y || !m || !d) return String(iso);
+    const w = '일월화수목금토'[new Date(y, m - 1, d).getDay()];
+    return `${y}. ${m}. ${d}.(${w})`;
+  }
+
+  function applyConfig() {
+    $('#deadlineText').textContent = CFG.deadline ? fmtDeadline(CFG.deadline) : '-';
+    $('#contactText').textContent = CFG.contact || '-';
+    $$('.contact-sms').forEach(a => { a.textContent = CFG.contact; a.href = 'sms:' + contactTel(); });
+    $('#versionText').textContent = 'ver. ' + FRONT_VERSION + (CFG.version ? ' · api ' + CFG.version : '');
+
+    if (CFG.closed) {
+      $('#closedBanner').classList.remove('hidden');
+      $('#formFields').disabled = true;
+      $('#btnSubmit').disabled = true;
+      closeNameModal();
+    }
+  }
+
+  /* ───────── 펼치기 / 접기 ───────── */
+  function setAcc(key, open) {
+    const box = $(`[data-acc="${key}"]`);
+    if (!box) return;
+    const head = $('.acc-head', box);
+    head.setAttribute('aria-expanded', String(open));
+    $('.more-label', head).textContent = open ? '접기' : '자세히';
+    $('[data-panel]', box).classList.toggle('hidden', !open);
+  }
+  const isOpen = key => { const b = $(`[data-acc="${key}"] .acc-head`); return b && b.getAttribute('aria-expanded') === 'true'; };
+
+  function setAll(open) {
+    ITEMS.forEach(it => { if (isVisible(it)) setAcc(it.key, open); });
+    $('#btnToggleAll').textContent = open ? '모두 접기' : '모두 펼치기';
+  }
+
+  const answered = it => it.type === 'text' ? !!$('#note').value.trim() : !!radio(it.key);
+
+  /** 응답 후 현재 항목을 접고 다음 미응답 항목을 엶 */
+  function advanceFrom(key) {
+    const idx = ITEMS.findIndex(it => it.key === key);
+    setTimeout(() => {
+      setAcc(key, false);
+      const next = ITEMS.slice(idx + 1).find(it => isVisible(it) && !answered(it));
+      if (next && !isOpen(next.key)) {
+        setAcc(next.key, true);
+        const box = $(`[data-acc="${next.key}"]`);
+        const r = box.getBoundingClientRect();
+        if (r.bottom > window.innerHeight - 120 || r.top < 0) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 280);
+  }
+
+  /* ───────── 체크박스 · 전체동의 / 선택동의 / 미동의 ───────── */
+  const bulkItems = () => ITEMS.filter(it => isVisible(it) && it.type !== 'text');
+  const boxOf = it => $(`[data-sel="${it.key}"]`);
+  const posVal = it => it.type === 'receive' ? '희망' : 'Y';
+  const negVal = it => it.type === 'receive' ? '미희망' : 'N';
+
+  function updateSelUI() {
+    const boxes = bulkItems().map(boxOf).filter(Boolean);
+    const n = boxes.filter(b => b.checked).length;
+    const all = $('#selAll');
+    all.checked = n > 0 && n === boxes.length;
+    all.indeterminate = n > 0 && n < boxes.length;
+    $('#btnSelY').disabled = n === 0;
+    $('#selInfo').textContent = n ? `${n}개 항목 체크됨` : '';
+  }
+
+  /** 응답이 '동의(희망)'인 항목만 체크 상태로 맞춤 */
+  function syncBox(it) {
+    const b = boxOf(it);
+    if (b) b.checked = radio(it.key) === posVal(it);
+  }
+
+  function setAnswer(it, positive) {
+    const r = $(`input[name="${it.key}"][value="${positive ? posVal(it) : negVal(it)}"]`);
+    if (r) r.checked = true;
+    clearError(it.key);
+    if (it.key === 'c2') clearError('phone');
+    if (it.key === 'c3') { clearError('company'); clearError('calAddr'); }
+  }
+
+  /** mode: 'all' 전체동의 | 'selected' 선택동의(체크=동의, 나머지=미동의) | 'none' 미동의 */
+  function applyBulk(mode) {
+    const list = bulkItems();
+    const checked = list.filter(it => boxOf(it).checked);
+    if (mode === 'selected' && !checked.length) return;
+    list.forEach(it => {
+      const pos = mode === 'all' ? true : mode === 'none' ? false : boxOf(it).checked;
+      setAnswer(it, pos);
+      syncBox(it);
+    });
+    updateSelUI();
+    updateUI();
+    toast(mode === 'all' ? '모든 항목에 동의했습니다.'
+      : mode === 'none' ? '모든 항목을 미동의로 표시했습니다.'
+      : `체크한 ${checked.length}개 항목은 동의, 나머지는 미동의로 표시했습니다.`);
+  }
+
+  /* ───────── 값 읽기 ───────── */
+  const radio = name => { const el = $(`input[name="${name}"]:checked`); return el ? el.value : ''; };
+
+  function fmtPhone(v) {
+    const d = String(v).replace(/\D/g, '').slice(0, 11);
+    if (d.length < 4) return d;
+    if (d.length < 8) return d.slice(0, 3) + '-' + d.slice(3);
+    if (d.length === 11) return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
+    return d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+  }
+
+  function collect() {
+    return {
+      name: $('#name').value.trim(),
+      phone: $('#phone').value.trim(),
+      company: $('#company').value.trim(),
+      home: $('#home').value.trim(),
+      email: $('#email').value.trim(),
+      calAddr: calTarget ? radio('calAddr') : '',
+      c1: radio('c1'), c2: radio('c2'), c3: calTarget ? radio('c3') : '', c4: radio('c4'), c5: radio('c5'),
+      receive: radio('receive'),
+      note: $('#note').value.trim(),
+      website: $('#website').value
+    };
+  }
+
+  /* ───────── 화면 상태 갱신 ───────── */
+  function setChip(el, label, v) {
+    el.textContent = label + (v === 'Y' ? ' 동의' : v === 'N' ? ' 미동의' : ' 미응답');
+    el.className = 'chip ' + (v === 'Y'
+      ? 'border-pine-700 bg-pine-700 text-white'
+      : v === 'N' ? 'border-slate-300 bg-slate-100 text-slate-500 line-through decoration-1'
+      : 'border-dashed border-slate-300 bg-white text-slate-400');
+  }
+
+  const ANS_STYLE = {
+    on: 'border-pine-700 bg-pine-700 text-white',
+    off: 'border-slate-300 bg-slate-100 text-slate-600',
+    none: 'border-dashed border-slate-300 bg-white text-slate-400'
+  };
+
+  function setAns(it, p) {
+    const el = $(`[data-ans="${it.key}"]`);
+    if (!el) return;
+    let text, tone;
+    if (it.type === 'yn') {
+      const v = p[it.key];
+      text = v === 'Y' ? '동의' : v === 'N' ? '미동의' : (it.optional ? '선택' : '미응답');
+      tone = v === 'Y' ? 'on' : v === 'N' ? 'off' : 'none';
+    } else if (it.type === 'receive') {
+      text = p.receive || '미응답';
+      tone = p.receive === '희망' ? 'on' : p.receive ? 'off' : 'none';
+    } else {
+      text = p.note ? '작성함' : '선택';
+      tone = p.note ? 'off' : 'none';
+    }
+    el.textContent = text;
+    el.className = 'ans hidden sm:inline-flex ' + ANS_STYLE[tone];
+
+    // 좁은 화면에서도 응답 상태가 보이도록 번호 원 색으로 표시
+    const num = $(`[data-num="${it.key}"]`);
+    if (num) {
+      num.className = 'num ' + (tone === 'on' ? '!bg-pine-700 !text-white'
+        : tone === 'off' ? '!bg-slate-500 !text-white' : '');
+      num.title = text;
+    }
+  }
+
+  function updateUI() {
+    const p = collect();
+    $('#calWrap').classList.toggle('hidden', !(calTarget && p.c3 === 'Y' && p.company && p.home));
+    ITEMS.forEach(it => setAns(it, p));
+
+    setChip($('#chip1'), `${NUM.c1}번`, p.c1);
+    setChip($('#chip4'), `${NUM.c4}번`, p.c4);
+    const st = $('#listStatus');
+    if (p.c1 === 'Y' && p.c4 === 'Y') { st.textContent = '명부에 수록됩니다'; st.className = 'mt-1 truncate text-[0.94rem] font-semibold text-pine-700'; }
+    else if (p.c1 === 'N' || p.c4 === 'N') { st.textContent = '명부에 수록되지 않습니다'; st.className = 'mt-1 truncate text-[0.94rem] font-semibold text-rust'; }
+    else { st.textContent = `${NUM.c1}번·${NUM.c4}번 응답 시 수록 여부가 표시됩니다`; st.className = 'mt-1 truncate text-[0.94rem] font-medium text-slate-500'; }
+
+    $('#noteCount').textContent = $('#note').value.length;
+  }
+
+  /* ───────── 검증 ───────── */
+  function validate(p) {
+    const e = {};
+    ITEMS.forEach(it => {
+      if (it.type === 'yn' && !it.optional && isVisible(it) && !p[it.key]) {
+        e[it.key] = `${NUM[it.key]}번 항목의 동의 여부를 선택해 주십시오.`;
+      }
+    });
+    if (!p.receive) e.receive = '명부 수령 희망 여부를 선택해 주십시오.';
+
+    if (p.name.length < 2) e.name = '성명을 2자 이상 입력해 주십시오.';
+    const pd = p.phone.replace(/\D/g, '');
+    if (pd && !/^01[016789]\d{7,8}$/.test(pd)) e.phone = '휴대전화번호 형식이 올바르지 않습니다. 예) 010-1234-5678';
+    if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email)) e.email = '이메일 형식이 올바르지 않습니다.';
+
+    if (p.c2 === 'Y' && !pd && !e.phone) e.phone = '문자 발송에 동의하시면 휴대전화번호가 필요합니다.';
+    if (calTarget && p.c3 === 'Y') {
+      if (!p.company && !p.home) e.company = '달력 배송에 동의하시면 회사주소 또는 자택주소가 필요합니다.';
+      else if (p.company && p.home && !p.calAddr) e.calAddr = '달력을 받으실 주소를 선택해 주십시오.';
+    }
+    return e;
+  }
+
+  function clearErrors() {
+    $$('[data-err]').forEach(el => { el.textContent = ''; el.classList.add('hidden'); });
+    $$('.field.is-error').forEach(el => el.classList.remove('is-error'));
+    $$('.group-error').forEach(el => el.classList.remove('group-error'));
+  }
+
+  function clearError(key) {
+    const msg = $(`[data-err="${key}"]`);
+    if (msg) { msg.textContent = ''; msg.classList.add('hidden'); }
+    const field = document.getElementById(key);
+    if (field) field.classList.remove('is-error');
+    const group = $(`[data-group="${key}"]`);
+    if (group) group.classList.remove('group-error');
+  }
+
+  function showErrors(errs) {
+    let first = null;
+    Object.keys(errs).forEach(key => {
+      const msg = $(`[data-err="${key}"]`);
+      if (msg) { msg.textContent = errs[key]; msg.classList.remove('hidden'); }
+      const field = document.getElementById(key);
+      const group = $(`[data-group="${key}"]`);
+      if (field) field.classList.add('is-error');
+      if (group) group.classList.add('group-error');
+      if (group && group.dataset.acc) setAcc(key, true);   // 오류 항목은 펼쳐서 보여 줌
+      const target = (group && group.dataset.acc) ? $('.acc-head', group) : (field || (group && $('input', group)));
+      // 문서상 가장 앞에 있는 오류 항목으로 이동
+      if (target && (!first || (target.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING))) {
+        first = target;
+      }
+    });
+    if (first) {
+      const box = first.closest('[data-group]') || first;
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => first.focus({ preventScroll: true }), 350);
+    }
+  }
+
+  /* ───────── 성명 입력 팝업 ───────── */
+  function openNameModal() {
+    $('#nameInput').value = $('#name').value;
+    $('#nameErr').classList.add('hidden');
+    $('#nameModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => $('#nameInput').focus(), 50);
+  }
+
+  function closeNameModal() {
+    $('#nameModal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  /** 서버에 성명을 확인하고 달력 항목 표시 여부를 반영 */
+  function checkName(name, onDone, onFail) {
+    api('checkName', { name: name })
+      .then(res => {
+        if (res && res.success) {
+          checkedName = name;
+          setCalendar(res.calendar);
+          onDone && onDone(res);
+        } else {
+          onFail && onFail((res && res.message) || '확인하지 못했습니다. 다시 시도해 주십시오.');
+        }
+      })
+      .catch(err => onFail && onFail(netMessage(err)));
+  }
+
+  function netMessage(err) {
+    if (err && err.message === 'API_URL_MISSING') return '서버 주소가 설정되지 않았습니다. 관리자에게 문의해 주십시오.';
+    if (err && err.name === 'AbortError') return '서버 응답이 늦습니다. 잠시 후 다시 시도해 주십시오.';
+    return '서버에 연결하지 못했습니다. 인터넷 연결을 확인하신 뒤 다시 시도해 주십시오.';
+  }
+
+  /** 서버 설정(회신 기한·연락처·마감 여부) 불러오기 */
+  function loadConfig() {
+    api('config')
+      .then(res => {
+        if (!res || !res.success) throw new Error('CONFIG_FAIL');
+        CFG = { deadline: res.deadline, contact: res.contact, closed: !!res.closed, version: res.version };
+        $('#loadError').classList.add('hidden');
+        applyConfig();
+      })
+      .catch(err => {
+        $('#loadErrorMsg').textContent = netMessage(err);
+        $('#loadError').classList.remove('hidden');
+      });
+  }
+
+  function submitName(e) {
+    e.preventDefault();
+    const name = $('#nameInput').value.trim();
+    const err = $('#nameErr');
+    if (name.length < 2) {
+      err.textContent = '성명을 2자 이상 입력해 주십시오.';
+      err.classList.remove('hidden');
+      $('#nameInput').focus();
+      return;
+    }
+    const btn = $('#btnName');
+    btn.disabled = true;
+    btn.textContent = '확인 중…';
+    checkName(name, () => {
+      btn.disabled = false;
+      btn.textContent = '확인';
+      $('#name').value = name;
+      clearError('name');
+      closeNameModal();
+    }, msg => {
+      btn.disabled = false;
+      btn.textContent = '확인';
+      err.textContent = msg;
+      err.classList.remove('hidden');
+    });
+  }
+
+  /** 인적정보의 성명을 고친 경우 달력 대상 여부를 다시 확인 */
+  function recheckName(after) {
+    const v = $('#name').value.trim();
+    if (v.length < 2 || normName(v) === normName(checkedName)) { after && after(); return; }
+    const before = calTarget;
+    checkName(v, res => {
+      if (before !== res.calendar) {
+        toast(res.calendar ? '회사 달력 배송 항목이 추가되었습니다.' : '회사 달력 배송 대상이 아니어서 해당 항목이 빠졌습니다.');
+      }
+      after && after();
+    }, msg => toast(msg, 'error'));
+  }
+
+  /* ───────── 확인 모달 ───────── */
+  let lastFocus = null;
+
+  function buildSummary(p) {
+    const yn = v => v === 'Y' ? '<span class="font-semibold text-pine-700">동의</span>' : '<span class="font-semibold text-slate-500">미동의</span>';
+    const val = v => v ? esc(v) : '<span class="text-slate-400">기재 안 함</span>';
+    const rows = [];
+    ITEMS.filter(isVisible).forEach(it => {
+      const label = `${NUM[it.key]}. ${it.title}`;
+      if (it.type === 'yn') {
+        rows.push([label, it.optional && !p[it.key] ? '<span class="text-slate-400">선택 안 함(미동의)</span>' : yn(p[it.key])]);
+      } else if (it.type === 'receive') {
+        rows.push([`${NUM[it.key]}. 명부 수령`, p.receive === '희망' ? '<span class="font-semibold text-pine-700">희망</span>' : '<span class="font-semibold text-slate-500">미희망</span>']);
+      } else {
+        rows.push([label, p.note ? `<span class="whitespace-pre-wrap">${esc(p.note)}</span>` : val('')]);
+      }
+    });
+    rows.push(['성명', val(p.name)]);
+    rows.push(['휴대전화번호', val(p.phone ? fmtPhone(p.phone) : '')]);
+    rows.push(['회사주소', val(p.company)]);
+    rows.push(['자택주소', val(p.home)]);
+    rows.push(['이메일', val(p.email)]);
+    if (calTarget && p.c3 === 'Y') {
+      const cal = p.company && p.home ? (p.calAddr === '회사' ? '회사주소' : '자택주소') : (p.company ? '회사주소' : '자택주소');
+      rows.push(['달력 받으실 주소', esc(cal)]);
+    }
+
+    $('#sumList').innerHTML = rows.map(([k, v]) => `
+      <div class="grid grid-cols-[minmax(0,9rem)_1fr] gap-3 py-2.5 text-[0.94rem] sm:grid-cols-[minmax(0,12rem)_1fr]">
+        <dt class="text-slate-500">${kw(esc(k))}</dt><dd class="min-w-0 text-ink">${v}</dd>
+      </div>`).join('');
+
+    const warns = [];
+    if (!(p.c1 === 'Y' && p.c4 === 'Y')) warns.push(['rust', `${NUM.c1}번과 ${NUM.c4}번에 모두 동의하지 않으셔서 명부에 수록되지 않습니다.`]);
+    if (p.receive === '희망' && p.c1 !== 'Y') warns.push(['rust', `${NUM.c1}번에 미동의하시면 명부를 배송해 드릴 수 없습니다.`]);
+    if (p.receive === '희망' && p.c1 === 'Y' && !p.company && !p.home) warns.push(['rust', '명부를 받으실 주소(회사 또는 자택)가 없습니다.']);
+    if (p.c5 === 'Y') warns.push(['brass', `사진은 ${contactText()}로 전송해 주십시오.`]);
+
+    const box = $('#sumWarn');
+    box.innerHTML = warns.map(([tone, t]) => tone === 'rust'
+      ? `<p class="rounded-lg border border-rust/30 bg-rust/5 px-3.5 py-2.5 font-medium text-rust">${t}</p>`
+      : `<p class="rounded-lg bg-[#FAF6EE] px-3.5 py-2.5 font-medium text-ink">${t}</p>`).join('');
+    box.classList.toggle('hidden', warns.length === 0);
+  }
+
+  function openConfirm(p) {
+    buildSummary(p);
+    lastFocus = document.activeElement;
+    $('#confirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    $('#btnConfirm').focus();
+  }
+
+  function closeConfirm() {
+    $('#confirmModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    if (lastFocus) lastFocus.focus();
+  }
+
+  /* ───────── 토스트 ───────── */
+  function toast(msg, tone) {
+    const el = document.createElement('div');
+    el.className = 'pointer-events-auto max-w-md rounded-xl px-4 py-3 font-medium shadow-lg transition-opacity duration-300 ' +
+      (tone === 'error' ? 'bg-rust text-white' : 'bg-ink text-white');
+    el.textContent = msg;
+    $('#toast').appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 4200);
+  }
+
+  /* ───────── 제출 ───────── */
+  let submitting = false;
+
+  function setBusy(busy) {
+    submitting = busy;
+    const b = $('#btnConfirm');
+    b.disabled = busy;
+    b.textContent = busy ? '제출 중…' : '이대로 제출';
+    $$('#confirmModal [data-close]').forEach(x => { if (x.tagName === 'BUTTON') x.disabled = busy; });
+  }
+
+  function send() {
+    if (submitting) return;
+    const p = collect();
+    setBusy(true);
+    api('submit', { payload: p })
+      .then(res => {
+        setBusy(false);
+        if (res && res.success) { closeConfirm(); showDone(res, p); }
+        else { toast((res && res.message) || '제출하지 못했습니다. 다시 시도해 주십시오.', 'error'); }
+      })
+      .catch(err => {
+        setBusy(false);
+        // 응답이 늦어 끊긴 경우 실제로는 저장됐을 수 있으므로 중복 제출 안내
+        const msg = err && err.name === 'AbortError'
+          ? '응답이 늦어 제출 결과를 확인하지 못했습니다. 다시 제출하셔도 마지막 제출 내용으로 갱신됩니다.'
+          : `제출하지 못했습니다. 인터넷 연결을 확인하신 뒤 다시 시도하시거나 ${CFG.contact || '총무'}에게 연락해 주십시오.`;
+        toast(msg, 'error');
+      });
+  }
+
+  function showDone(res, p) {
+    $('#formView').classList.add('hidden');
+    $('#bar').classList.add('hidden');
+    $('#doneView').classList.remove('hidden');
+    $('#doneNo').textContent = res.receiptNo || '-';
+    $('#doneAt').textContent = res.submittedAt || '-';
+    const listed = $('#doneListed');
+    listed.textContent = res.listed ? '수록 예정' : '수록되지 않음';
+    listed.className = 'font-semibold ' + (res.listed ? 'text-pine-700' : 'text-rust');
+    $('#doneMsg').textContent = res.replaced
+      ? '이전에 제출하신 내용이 이번 내용으로 바뀌었습니다. 협조해 주셔서 감사합니다.'
+      : '협조해 주셔서 감사합니다. 접수번호를 확인해 두시면 문의하실 때 도움이 됩니다.';
+    const ph = $('#donePhoto');
+    if (p.c5 === 'Y') {
+      ph.innerHTML = `사진 수록에 동의하셨습니다. 사진을 <a class="font-semibold underline underline-offset-2" href="sms:${contactTel()}">${contactText()}</a>로 전송해 주십시오.`;
+      ph.classList.remove('hidden');
+    } else {
+      ph.classList.add('hidden');
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  function resetForm() {
+    $('#form').reset();
+    clearErrors();
+    checkedName = '';
+    setCalendar(false);
+    setAll(false);
+    $('#doneView').classList.add('hidden');
+    $('#formView').classList.remove('hidden');
+    $('#bar').classList.remove('hidden');
+    window.scrollTo({ top: 0 });
+    openNameModal();
+  }
+
+  /* ───────── 이벤트 ───────── */
+  function bind() {
+    $('#nameForm').addEventListener('submit', submitName);
+
+    const isTyping = el => el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !['radio', 'checkbox'].includes(el.type)));
+    $('#form').addEventListener('focusin', e => {
+      if (isTyping(e.target) && window.matchMedia('(max-width: 639px)').matches) $('#bar').classList.add('invisible');
+    });
+    $('#form').addEventListener('focusout', () => {
+      setTimeout(() => { if (!isTyping(document.activeElement)) $('#bar').classList.remove('invisible'); }, 50);
+    });
+    $('#name').addEventListener('change', () => recheckName());
+
+    $('#phone').addEventListener('input', e => {
+      const el = e.target;
+      const atEnd = el.selectionStart === el.value.length;
+      el.value = fmtPhone(el.value);
+      if (atEnd) el.setSelectionRange(el.value.length, el.value.length);
+    });
+
+    // 한 줄 항목: 누르면 펼치기/접기
+    $('#consentList').addEventListener('click', e => {
+      const head = e.target.closest('.acc-head');
+      if (!head) return;
+      const key = head.closest('[data-acc]').dataset.acc;
+      setAcc(key, !isOpen(key));
+    });
+    $('#btnToggleAll').addEventListener('click', () => setAll($('#btnToggleAll').textContent === '모두 펼치기'));
+
+    // 체크박스 · 일괄 버튼
+    $('#selAll').addEventListener('change', e => {
+      bulkItems().forEach(it => { boxOf(it).checked = e.target.checked; });
+      updateSelUI();
+    });
+    $('#consentList').addEventListener('change', e => {
+      if (e.target.matches('[data-sel]')) updateSelUI();
+    });
+    $('#btnAllY').addEventListener('click', () => applyBulk('all'));
+    $('#btnSelY').addEventListener('click', () => applyBulk('selected'));
+    $('#btnAllN').addEventListener('click', () => applyBulk('none'));
+
+    $('#form').addEventListener('input', e => {
+      if (e.target.id) clearError(e.target.id);
+      if (e.target.id === 'home') clearError('company');
+      updateUI();
+    });
+    $('#form').addEventListener('change', e => {
+      const name = e.target.name;
+      if (!name) return;
+      clearError(name);
+      if (name === 'c2') clearError('phone');
+      if (name === 'c3') { clearError('company'); clearError('calAddr'); }
+      updateUI();
+      const it = itemOf(name);
+      if (it && e.target.type === 'radio') {
+        syncBox(it);
+        updateSelUI();
+        advanceFrom(name);
+      }
+    });
+
+    $('#form').addEventListener('submit', e => {
+      e.preventDefault();
+      if (CFG.closed) return;
+      // 성명을 고친 직후라면 달력 대상 여부를 먼저 다시 확인
+      recheckName(() => {
+        clearErrors();
+        const p = collect();
+        const errs = validate(p);
+        if (Object.keys(errs).length) {
+          showErrors(errs);
+          toast('입력하지 않았거나 확인이 필요한 항목이 있습니다.', 'error');
+          return;
+        }
+        openConfirm(p);
+      });
+    });
+
+    $('#btnConfirm').addEventListener('click', send);
+    $$('#confirmModal [data-close]').forEach(el => el.addEventListener('click', () => { if (!submitting) closeConfirm(); }));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !$('#confirmModal').classList.contains('hidden') && !submitting) closeConfirm();
+    });
+    $('#btnAgain').addEventListener('click', resetForm);
+  }
+
+  renderItems();
+  applyConfig();
+  bind();
+  renumber();
+  updateSelUI();
+  updateUI();
+  openNameModal();      // 서버 설정을 기다리지 않고 바로 성명 입력부터
+  loadConfig();         // 마감 상태면 응답 도착 후 팝업을 닫고 양식을 잠금
+  $('#btnRetry').addEventListener('click', loadConfig);
+})();
+</script>
+</body>
+</html>
