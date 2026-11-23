@@ -7,7 +7,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="theme-color" content="#1F4A40">
-  <title>재보회 명부 · 달력 배송 개인정보 제공 동의</title>
+  <title>재보회 개인정보 제공 동의 요청</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%92%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" crossorigin="anonymous"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -73,12 +73,11 @@
 
   <header>
     <h1 class="text-[1.5rem] font-bold leading-snug tracking-tight sm:text-[2rem]">
-      재보회 명부 제작 및 회사 달력 배송
-      <span class="mt-1 block text-[1.1rem] font-semibold text-pine-700 sm:text-[1.35rem]">개인정보 제공 동의 요청</span>
+      개인정보 제공 동의 요청
     </h1>
 
     <div class="mt-5 space-y-3 leading-relaxed text-slate-700">
-      <p>안녕하세요, 재보회 총무 장철민입니다.<br class="hidden sm:block"> 명부 발간과 회사 달력 배송을 위해 동의 여부 확인과 정보 업데이트를 요청드립니다.</p>
+      <p>안녕하세요, 재보회 총무 장철민입니다.<br class="hidden sm:block"> 명부 발간 등을 위하여 동의 여부 확인 및 정보 업데이트를 요청 드립니다.</p>
       <p>아래 양식을 작성해 제출해 주십시오. <strong class="font-semibold text-ink">회신이 없으신 경우 명부에 수록되지 않습니다.</strong></p>
     </div>
 
@@ -107,7 +106,6 @@
           <button type="button" id="btnToggleAll" class="more hover:bg-pine-50">모두 펼치기</button>
         </div>
         <p class="mt-1 text-sm text-slate-500">
-          <span class="whitespace-nowrap">Y: 동의, N: 미동의</span> &nbsp;
           <span class="whitespace-nowrap"><span class="mark">①</span> 코리안리재보험(주)에 제공</span> &nbsp;
           <span class="whitespace-nowrap"><span class="mark">②</span> 회원 상호 간 공개</span>
         </p>
@@ -204,6 +202,7 @@
       <div class="flex items-center gap-1.5">
         <span id="chip1" class="chip"></span>
         <span id="chip4" class="chip"></span>
+        <span id="saveState" class="ml-1 min-w-0 truncate text-xs font-medium text-slate-500" aria-live="polite"></span>
       </div>
       <p id="listStatus" class="mt-1 truncate text-[0.94rem] font-semibold" aria-live="polite"></p>
     </div>
@@ -277,7 +276,7 @@
      이 주소는 공개 정보입니다. 비밀번호·키 같은 값은 넣지 마십시오. */
   const API_URL = 'https://script.google.com/macros/s/AKfycbz8E3nWeZ_9SPWjuxJWoh66WmlEx4r2t_-97t_0A9KTIACW0bsjnCgjEF_qQmcZx1h2/exec';
   /* ═══════════════════════════════════════════════════════ */
-  const FRONT_VERSION = '2026.11.23-12';
+  const FRONT_VERSION = '2026.11.23-15';
   const API_TIMEOUT_MS = 25000;
   let CFG = { deadline: '', contact: '', closed: false, version: '' };
 
@@ -391,6 +390,17 @@
   /* ───────── 상태 ───────── */
   let calTarget = false;      // 달력배송명단 포함 여부
   let checkedName = '';       // 마지막으로 서버에 확인한 성명
+
+  /* 자동 저장 상태
+     record      : 서버가 만든 줄의 { receiptNo, token } — 이후 저장은 같은 줄을 갱신
+     autosaveOn  : 일괄 버튼을 누른 뒤부터 입력할 때마다 자동 저장
+     saveChain   : 저장 요청을 한 번에 하나씩 순서대로 보내 중복 줄 생성을 막음 */
+  let record = null;
+  let autosaveOn = false;
+  let lastSavedJson = '';
+  let saveTimer = null;
+  let saveChain = Promise.resolve();
+  const SAVE_DELAY_MS = 1500;
   const NUM = {};             // 항목별 화면 번호
 
   const normName = v => String(v || '').replace(/\s+/g, '');
@@ -521,7 +531,7 @@
     const [y, m, d] = String(iso).split('-').map(Number);
     if (!y || !m || !d) return String(iso);
     const w = '일월화수목금토'[new Date(y, m - 1, d).getDay()];
-    return `${y}. ${m}. ${d}.(${w})`;
+    return `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}(${w})`;   // 예: 2026.11.27(금)
   }
 
   function applyConfig() {
@@ -613,9 +623,88 @@
     });
     updateSelUI();
     updateUI();
-    toast(mode === 'all' ? '모든 항목에 동의했습니다.'
-      : mode === 'none' ? '모든 항목을 미동의로 표시했습니다.'
-      : `체크한 ${checked.length}개 항목은 동의, 나머지는 미동의로 표시했습니다.`);
+    const done = mode === 'all' ? '모든 항목을 동의로 저장했습니다.'
+      : mode === 'none' ? '모든 항목을 미동의로 저장했습니다.'
+      : `체크한 ${checked.length}개 항목은 동의, 나머지는 미동의로 저장했습니다.`;
+
+    // 동의 내용을 바로 저장하고, 이후 입력하는 인적정보는 자동 저장
+    autosaveOn = true;
+    clearTimeout(saveTimer);
+    saveDraft(true).then(res => {
+      if (res && res.success) {
+        toast(done + ' 인적정보를 입력하시면 자동으로 함께 저장되며, 마지막에 [제출하기]를 눌러 주십시오.');
+        nudgeSubmit();
+      } else if (res && res.message) {
+        toast(res.message, 'error');
+      }
+    });
+  }
+
+  /* ───────── 자동 저장 ───────── */
+  function enqueue(task) {
+    const run = saveChain.then(task, task);
+    saveChain = run.catch(() => {});
+    return run;
+  }
+
+  function setSaveState(state, time) {
+    const el = $('#saveState');
+    const map = {
+      '': ['', 'text-slate-500'],
+      pending: ['입력 중…', 'text-slate-500'],
+      saving: ['저장 중…', 'text-slate-500'],
+      saved: ['자동 저장됨' + (time ? ' ' + time : ''), 'text-pine-700'],
+      error: ['저장 실패 · 다시 시도 중', 'text-rust']
+    };
+    const [text, color] = map[state] || map[''];
+    el.textContent = text;
+    el.className = 'ml-1 min-w-0 truncate text-xs font-medium ' + color;
+  }
+
+  /** 작성 중 저장 — force 가 아니면 바뀐 내용이 있을 때만 보냄 */
+  function saveDraft(force) {
+    return enqueue(async () => {
+      const p = collect();
+      const json = JSON.stringify(p);
+      if (!force && json === lastSavedJson) { setSaveState(record ? 'saved' : ''); return { success: true, skipped: true }; }
+      setSaveState('saving');
+      try {
+        const res = await api('save', { payload: Object.assign({}, p, record || {}) });
+        if (res && res.success) {
+          if (res.token) record = { receiptNo: res.receiptNo, token: res.token };
+          lastSavedJson = json;
+          setSaveState('saved', res.savedAt);
+        } else {
+          setSaveState('error');
+          retryLater();
+        }
+        return res;
+      } catch (err) {
+        setSaveState('error');
+        retryLater();
+        return { success: false, message: netMessage(err) };
+      }
+    });
+  }
+
+  function scheduleSave() {
+    if (!autosaveOn || submitting) return;
+    clearTimeout(saveTimer);
+    setSaveState('pending');
+    saveTimer = setTimeout(() => { saveTimer = null; saveDraft(false); }, SAVE_DELAY_MS);
+  }
+
+  function retryLater() {
+    if (!autosaveOn) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { saveTimer = null; saveDraft(true); }, 8000);
+  }
+
+  /** 제출 버튼을 잠깐 강조해 다음 할 일을 알려 줌 */
+  function nudgeSubmit() {
+    const b = $('#btnSubmit');
+    b.classList.add('ring-4', 'ring-[#0000FF]/40', 'ring-offset-2');
+    setTimeout(() => b.classList.remove('ring-4', 'ring-[#0000FF]/40', 'ring-offset-2'), 2400);
   }
 
   /* ───────── 값 읽기 ───────── */
@@ -948,12 +1037,19 @@
 
   function send() {
     if (submitting) return;
+    clearTimeout(saveTimer);
+    saveTimer = null;
     const p = collect();
     setBusy(true);
-    api('submit', { payload: p })
+    enqueue(() => api('submit', { payload: Object.assign({}, p, record || {}) }))
       .then(res => {
         setBusy(false);
-        if (res && res.success) { closeConfirm(); showDone(res, p); }
+        if (res && res.success) {
+          lastSavedJson = JSON.stringify(p);
+          setSaveState('');
+          closeConfirm();
+          showDone(res, p);
+        }
         else { toast((res && res.message) || '제출하지 못했습니다. 다시 시도해 주십시오.', 'error'); }
       })
       .catch(err => {
@@ -992,6 +1088,11 @@
     $('#form').reset();
     clearErrors();
     checkedName = '';
+    record = null;
+    autosaveOn = false;
+    lastSavedJson = '';
+    clearTimeout(saveTimer);
+    setSaveState('');
     setCalendar(false);
     setAll(false);
     $('#doneView').classList.add('hidden');
@@ -1013,6 +1114,13 @@
       setTimeout(() => { if (!isTyping(document.activeElement)) $('#bar').classList.remove('invisible'); }, 50);
     });
     $('#name').addEventListener('change', () => recheckName());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && saveTimer && autosaveOn) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+        saveDraft(false);
+      }
+    });
 
     $('#phone').addEventListener('input', e => {
       const el = e.target;
@@ -1046,6 +1154,7 @@
       if (e.target.id) clearError(e.target.id);
       if (e.target.id === 'home') clearError('company');
       updateUI();
+      if (e.target.id !== 'website') scheduleSave();
     });
     $('#form').addEventListener('change', e => {
       const name = e.target.name;
@@ -1054,6 +1163,7 @@
       if (name === 'c2') clearError('phone');
       if (name === 'c3') { clearError('company'); clearError('calAddr'); }
       updateUI();
+      scheduleSave();
       const it = itemOf(name);
       if (it && e.target.type === 'radio') {
         syncBox(it);
